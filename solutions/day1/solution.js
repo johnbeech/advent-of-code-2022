@@ -10,10 +10,8 @@ async function run () {
   await solveForSecondStar(input)
 }
 
-async function solveForFirstStar (input) {
-  report('Input:', input)
-
-  const elves = input.split('\n').reduce((acc, item, index, list) => {
+function surveyElves (input) {
+  return input.split('\n').reduce((acc, item, index, list) => {
     const prevLine = list[index - 1]
     const elf = prevLine ? acc.pop() : { calories: [], totalCalories: 0 }
     if (item) {
@@ -24,6 +22,12 @@ async function solveForFirstStar (input) {
     acc.push(elf)
     return acc
   }, [])
+}
+
+async function solveForFirstStar (input) {
+  report('Input:', input)
+
+  const elves = surveyElves(input)
 
   const highestTotalCalories = Math.max(...elves.map(elf => elf.totalCalories))
   const solution = highestTotalCalories
@@ -32,7 +36,20 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const elves = surveyElves(input)
+  const topThree = elves.sort((a, b) => {
+    const ta = a.totalCalories
+    const tb = b.totalCalories
+    return ta < tb ? 1 : -1
+  }).slice(0, 3)
+
+  const sumOfTopTree = topThree.reduce((acc, item) => {
+    return acc + item.totalCalories
+  }, 0)
+
+  console.log({ topThree, sumOfTopTree })
+  const solution = sumOfTopTree
+
   report('Solution 2:', solution)
 }
 
