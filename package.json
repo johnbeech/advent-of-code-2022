@@ -1,8 +1,8 @@
 {
-  "name": "advent-of-code-template",
-  "logName": "Advent of Code Template",
+  "name": "advent-of-code-2022",
+  "logName": "Advent of Code 2022",
   "version": "1.0.0",
-  "description": "Advent of Code Template using Node JS for Current Year.",
+  "description": "Advent of Code 2022 using Node JS for Current Year.",
   "main": "run.js",
   "scripts": {
     "start": "npm run test && node run.js",

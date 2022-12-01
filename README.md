@@ -1,14 +1,12 @@
-# Advent of Code Template
+# Advent of Code 2022
 
-Advent of Code Template using Node JS for Current Year.
+My solutions for Advent of Code 2022.
 
 ## Setup
 
-If using the Advent of Code Template repo; click [**`Use this template`**](https://github.com/johnbeech/advent-of-code-nodejs-template/generate) and set a new repository name.
 
 Clone this repo, then run `npm install` to install dependencies.
 
-If this a brand new repository, run: `node setup` to configure it for Current Year and check in the changes.
 
 ## Running
 
