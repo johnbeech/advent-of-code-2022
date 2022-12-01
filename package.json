@@ -1,0 +1,22 @@
+{
+  "name": "advent-of-code-template",
+  "logName": "Advent of Code Template",
+  "version": "1.0.0",
+  "description": "Advent of Code Template using Node JS for Current Year.",
+  "main": "run.js",
+  "scripts": {
+    "start": "npm run test && node run.js",
+    "webserver": "node solutions/viewer-server.js",
+    "test": "npm run lint",
+    "lint": "standard --fix"
+  },
+  "author": "John Beech",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "pre-push": "*",
+    "promise-path": "*",
+    "standard": "*",
+    "stats-lite": "*"
+  }
+}
