@@ -55,6 +55,24 @@ const moves = {
   }
 }
 
+moves.ROCK.tactics = {
+  win: moves.PAPER,
+  draw: moves.ROCK,
+  loss: moves.SCISSORS
+}
+
+moves.PAPER.tactics = {
+  win: moves.SCISSORS,
+  draw: moves.PAPER,
+  loss: moves.ROCK
+}
+
+moves.SCISSORS.tactics = {
+  win: moves.ROCK,
+  draw: moves.SCISSORS,
+  loss: moves.PAPER
+}
+
 const codes = {
   A: moves.ROCK,
   B: moves.PAPER,
@@ -64,20 +82,34 @@ const codes = {
   Z: moves.SCISSORS
 }
 
+const alternateCodes = {
+  A: moves.ROCK,
+  B: moves.PAPER,
+  C: moves.SCISSORS,
+  X: outcomes.LOSS,
+  Y: outcomes.DRAW,
+  Z: outcomes.WIN
+}
+
 function decodeStrategyGuide (input) {
   return input.split('\n').map(line => {
     const symbols = line.trim().split(' ')
     const [opponentPick, playerPick] = symbols.map(symbol => codes[symbol])
+    const [, desiredOutcome] = symbols.map(symbol => alternateCodes[symbol])
 
     const outcome = opponentPick.outcomes[playerPick.name]
     const score = playerPick.score + outcome.score
+
+    const chosenMove = opponentPick.tactics[desiredOutcome.name]
+    const alternateScore = chosenMove.score + desiredOutcome.score
 
     return {
       symbols,
       opponentPick,
       playerPick,
       outcome,
-      score
+      score,
+      alternateScore
     }
   })
 }
@@ -95,7 +127,14 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const strategyGuide = decodeStrategyGuide(input)
+
+  const totalScore = strategyGuide.reduce((acc, item) => {
+    return acc + item.alternateScore
+  }, 0)
+
+  const solution = totalScore
+
   report('Solution 2:', solution)
 }
 
