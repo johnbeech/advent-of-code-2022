@@ -13,6 +13,7 @@ async function run () {
 function parseRucksacks (input) {
   const rucksacks = input.split('\n').map(line => {
     const sharedContents = {}
+    const allKeys = {}
     const left = {}
     const right = {}
     const midPoint = line.length / 2
@@ -26,12 +27,14 @@ function parseRucksacks (input) {
         sharedContents[key] = { key, priority }
         acc.sumOfPriorities += priority
       }
+      acc.allKeys[key] = { key, priority }
       return acc
     }, {
       line,
       left,
       right,
       sharedContents,
+      allKeys,
       sumOfPriorities: 0,
       midPoint,
       lineLength: line.length
@@ -39,6 +42,22 @@ function parseRucksacks (input) {
     return contents
   })
   return rucksacks
+}
+
+function parseGroupBadges (rucksacks) {
+  return rucksacks.reduce((acc, rucksack, index, arr) => {
+    const first = arr[index - 2]?.allKeys ?? {}
+    const second = arr[index - 1]?.allKeys ?? {}
+    const third = arr[index]?.allKeys ?? {}
+    if (index > 1 && index % 3 === 2 && first && second && third) {
+      console.log({ index, first, second, third })
+      const badge = Object.entries(first).filter(([key, value]) => {
+        return second[key] && third[key]
+      })[0][1]
+      acc.push({ badge, first, second, third })
+    }
+    return acc
+  }, [])
 }
 
 async function solveForFirstStar (input) {
@@ -54,7 +73,17 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const rucksacks = parseRucksacks(input)
+  report('Rucksacks:', rucksacks)
+
+  const groupBadges = parseGroupBadges(rucksacks)
+
+  await write(fromHere('groupBadges.json'), JSON.stringify(groupBadges, null, 2))
+
+  const solution = groupBadges.reduce((acc, group) => {
+    return acc + group.badge.priority
+  }, 0)
+
   report('Solution 2:', solution)
 }
 
