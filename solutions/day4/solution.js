@@ -26,7 +26,12 @@ function parseInstructionPairs (input) {
     const leftFullOverlap = (leftPair.rangeStart <= rightPair.rangeStart && leftPair.rangeEnd >= rightPair.rangeEnd)
     const rightFullOverlap = (rightPair.rangeStart <= leftPair.rangeStart && rightPair.rangeEnd >= leftPair.rangeEnd)
     const fullyContainsTheOtherPair = leftFullOverlap || rightFullOverlap
-    return { leftPair, rightPair, leftFullOverlap, rightFullOverlap, fullyContainsTheOtherPair }
+
+    const leftOverlap = (leftPair.rangeStart <= rightPair.rangeStart && leftPair.rangeEnd >= rightPair.rangeStart)
+    const rightOverlap = (rightPair.rangeStart <= leftPair.rangeEnd && rightPair.rangeEnd >= leftPair.rangeStart)
+    const partialOverlap = leftOverlap || rightOverlap
+
+    return { leftPair, rightPair, leftFullOverlap, rightFullOverlap, fullyContainsTheOtherPair, partialOverlap }
   })
 }
 
@@ -45,7 +50,13 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const instructionPairs = parseInstructionPairs(input)
+  const numberOfAssignmentWithProp = instructionPairs.reduce((acc, item) => {
+    const count = item.partialOverlap ? 1 : 0
+    return acc + count
+  }, 0)
+
+  const solution = numberOfAssignmentWithProp
   report('Solution 2:', solution)
 }
 
