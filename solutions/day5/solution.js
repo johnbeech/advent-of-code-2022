@@ -22,7 +22,6 @@ function parseStacks (input) {
       }
       return acc
     }, [])
-    console.log({ crates })
     crates.forEach((crate, col) => {
       acc[col] = acc[col] ?? []
       if (crate !== EMPTY_CRATE) {
@@ -79,7 +78,25 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const instructions = parseInstructions(input)
+  const stacks = parseStacks(input)
+
+  const stackResult = instructions.reduce((stacks, instruction) => {
+    const { x, a, b } = instruction
+    const crateBlock = []
+    while (crateBlock.length < x) {
+      const column = stacks[a - 1]
+      const crate = column.pop()
+      crateBlock.push(crate)
+    }
+    stacks[b - 1].push(...crateBlock.reverse())
+    return stacks
+  }, stacks)
+
+  const solution = stackResult.reduce((acc, item) => {
+    return acc + item.pop()
+  }, '')
+
   report('Solution 2:', solution)
 }
 
