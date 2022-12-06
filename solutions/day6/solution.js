@@ -33,7 +33,24 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const buffer = input.split('')
+  let uniqueChars = 0
+  let processedChars = 0
+  const lastBlock = []
+  while (uniqueChars < 14 && buffer.length > 0) {
+    uniqueChars = 0
+    if (lastBlock.length >= 14) {
+      lastBlock.shift()
+    }
+    const char = buffer.shift()
+    processedChars++
+    lastBlock.push(char)
+    const set = new Set(lastBlock)
+    uniqueChars = set.size
+  }
+
+  const solution = processedChars
+  report('Info:', { lastBlock, uniqueChars, processedChars, buffer })
   report('Solution 2:', solution)
 }
 
