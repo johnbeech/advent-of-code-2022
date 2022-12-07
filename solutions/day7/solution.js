@@ -160,12 +160,7 @@ async function solveForFirstStar (input) {
 
 async function solveForSecondStar (input) {
   const computer = new Computer()
-  const instructions = processInstructions(input, computer)
-
-  report('Instructions:', { instructions })
-
-  computer.cd('/')
-  computer.ls(true)
+  processInstructions(input, computer)
 
   const totalDiskSpace = 70000000
   const spaceNeeded = 30000000
