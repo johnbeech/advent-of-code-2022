@@ -90,6 +90,7 @@ class Computer {
 
   ls (all, opts, tab = '') {
     const { cdir } = opts ?? this
+    console.log(`${tab}- ${cdir.dirname || '/'} (dir, size=${cdir.size})`)
     Object.values(cdir.dirs).forEach(dir => {
       if (all) {
         this.ls(all, { cdir: dir }, tab + '  ')
@@ -129,7 +130,6 @@ function processInstructions (input, computer) {
   }
 
   input.split('\n').filter(n => n).forEach((line, index) => {
-    console.log({ line, index })
     const key = line.slice(0, 4).trim()
     const fn = fns[key] ?? fns.file
     fn(line)
