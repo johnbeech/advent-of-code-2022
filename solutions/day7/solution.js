@@ -159,7 +159,32 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const computer = new Computer()
+  const instructions = processInstructions(input, computer)
+
+  report('Instructions:', { instructions })
+
+  computer.cd('/')
+  computer.ls(true)
+
+  const totalDiskSpace = 70000000
+  const spaceNeeded = 30000000
+
+  const usedSpace = computer._dirs['/'].size
+
+  const solution = computer.dirs.map(dir => {
+    const spaceIfDeleted = totalDiskSpace - usedSpace + dir.size
+    const worthDeleting = spaceIfDeleted >= spaceNeeded
+    return {
+      path: dir.fullpath,
+      size: dir.size,
+      spaceIfDeleted,
+      worthDeleting
+    }
+  }).filter(item => item.worthDeleting).sort((a, b) => {
+    return a.size > b.size ? 1 : -1
+  })[0].size
+
   report('Solution 2:', solution)
 }
 
