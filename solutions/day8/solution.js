@@ -28,7 +28,7 @@ function rotate (matrix) {
 
 function parseGrid (input) {
   return input.split('\n').map(line => {
-    return line.split('')
+    return line.split('').map(n => Number.parseInt(n))
   })
 }
 
@@ -114,9 +114,59 @@ async function solveForFirstStar (input) {
   report('Solution 1:', solution)
 }
 
+const directions = [{
+  x: 0,
+  y: -1
+}, {
+  x: -1,
+  y: 0
+}, {
+  x: 0,
+  y: 1
+}, {
+  x: 1,
+  y: 0
+}]
+
+function scoreCell ({ cell, treeGrid, rowIndex, colIndex }) {
+  const visibleTrees = directions.map((direction) => {
+    const maxTreeHeight = cell
+    let nextTree
+    let visibleTreeCount = 0
+    let offset = 1
+    do {
+      const colOffset = (direction.x * offset)
+      const rowOffset = (direction.y * offset)
+      nextTree = treeGrid[rowIndex + colOffset]?.[colIndex + rowOffset]
+      if (nextTree >= 0) {
+        visibleTreeCount += 1
+      }
+      offset++
+    } while (nextTree >= 0 && nextTree < maxTreeHeight)
+    return visibleTreeCount
+  })
+  console.log({ rowIndex, colIndex, visibleTrees })
+  const score = visibleTrees.reduce((acc, item) => {
+    return acc * item
+  }, 1)
+  return { cell, x: colIndex, y: rowIndex, score, visibleTrees }
+}
+
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
-  report('Solution 2:', solution)
+  const treeGrid = parseGrid(input)
+  const treeScores = treeGrid.reduce((acc, row, rowIndex, treeGrid) => {
+    return row.reduce((acc, cell, colIndex) => {
+      const key = [rowIndex, colIndex].join(',')
+      acc[key] = scoreCell({ cell, treeGrid, rowIndex, colIndex })
+      return acc
+    }, acc)
+  }, {})
+
+  const highestScoringLocation = Object.values(treeScores).sort((a, b) => {
+    return a.score < b.score ? 1 : -1
+  })[0]
+  const solution = highestScoringLocation.score
+  report('Solution 2:', solution, { highestScoringLocation })
 }
 
 run()
