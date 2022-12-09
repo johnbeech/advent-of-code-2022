@@ -210,7 +210,7 @@ async function solveForSecondStar (input) {
       visitGrid[headKey] = headVisits
       head.path.push({ x: head.x, y: head.y })
 
-      tails.reverse().forEach(tail => {
+      tails.forEach(tail => {
         const head = tail.parent
         let tailVector
         do {
@@ -289,6 +289,9 @@ async function solveForSecondStar (input) {
     '',
     '## Tail Path 1',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '1') ?? '.')),
+    '',
+    '## Tail Path 8 + 9',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '9') ?? value.find(n => n === '8') ?? '.')),
     '',
     '## Head Path',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === 'H') ?? '.'))
