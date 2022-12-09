@@ -6,8 +6,11 @@ const report = (...messages) => console.log(`[${require(fromHere('../../package.
 async function run () {
   const input = (await read(fromHere('input.txt'), 'utf8')).trim()
 
-  await solveForFirstStar(input)
-  await solveForSecondStar(input)
+  await solveForFirstStar(input, 'first-star')
+  await solveForSecondStar(input, 'second-star')
+
+  const largerInput = (await read(fromHere('test-larger.txt'), 'utf8')).trim()
+  await solveForSecondStar(largerInput, 'larger-grid')
 }
 
 function parseInstructions (input) {
@@ -96,7 +99,7 @@ function createEmptyGrid (width, height, symbol = ' ') {
   return result
 }
 
-async function solveForFirstStar (input) {
+async function solveForFirstStar (input, outputSuffix) {
   const instructions = parseInstructions(input)
 
   const visitGrid = {
@@ -153,7 +156,7 @@ async function solveForFirstStar (input) {
     }
   })
 
-  await write(fromHere('visitGrid.txt'), [
+  await write(fromHere(`visitGrid-${outputSuffix}.md`), [
     '## Visit Grid',
     gridToString(sparseGridToGrid(visitGrid, (value) => value.find(n => n === 's') ?? value.find(n => n === 'T') ?? value.find(n => n === 'H'))),
     '',
@@ -171,7 +174,7 @@ async function solveForFirstStar (input) {
   report('Solution 1:', solution)
 }
 
-async function solveForSecondStar (input) {
+async function solveForSecondStar (input, outputSuffix) {
   const instructions = parseInstructions(input)
 
   const visitGrid = {
@@ -246,7 +249,7 @@ async function solveForSecondStar (input) {
     }
   })
 
-  await write(fromHere('visitGrid-long-tail.txt'), [
+  await write(fromHere(`visitGrid-${outputSuffix}.md`), [
     '## Visit Grid',
     gridToString(sparseGridToGrid(visitGrid,
       (value) => {
@@ -289,9 +292,6 @@ async function solveForSecondStar (input) {
     '',
     '## Tail Path 1',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '1') ?? '.')),
-    '',
-    '## Tail Path 8 + 9',
-    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '9') ?? value.find(n => n === '8') ?? '.')),
     '',
     '## Head Path',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === 'H') ?? '.'))
