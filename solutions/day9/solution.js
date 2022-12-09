@@ -159,11 +159,9 @@ async function solveForFirstStar (input) {
     '',
     '## Tail Path',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === 'T') ?? '.')),
-    // JSON.stringify({ tail }, null, 2),
     '',
     '## Head Path',
     gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === 'H') ?? '.'))
-    // JSON.stringify({ head }, null, 2)
   ].join('\n'))
 
   const solution = Object.values(visitGrid).reduce((acc, visit) => {
@@ -174,7 +172,132 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const instructions = parseInstructions(input)
+
+  const visitGrid = {
+    '0,0': ['s', 'H', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+  }
+  const head = {
+    x: 0,
+    y: 0,
+    path: []
+  }
+
+  const tails = []
+  let lastHead = head
+  while (tails.length < 9) {
+    const newTail = {
+      symbol: tails.length + 1 + '',
+      x: 0,
+      y: 0,
+      parent: lastHead,
+      path: []
+    }
+    tails.push(newTail)
+    lastHead = newTail
+  }
+
+  instructions.forEach(item => {
+    let step = 0
+    while (step < item.distance) {
+      step++
+      head.x += item.direction.x
+      head.y += item.direction.y
+
+      const headKey = [head.x, head.y].join(',')
+      const headVisits = visitGrid[headKey] ?? []
+      headVisits.push('H')
+      visitGrid[headKey] = headVisits
+      head.path.push({ x: head.x, y: head.y })
+
+      tails.reverse().forEach(tail => {
+        const head = tail.parent
+        let tailVector
+        do {
+          tailVector = {
+            dx: Math.sign(head.x - tail.x),
+            dy: Math.sign(head.y - tail.y),
+            sx: Math.abs(head.x - tail.x),
+            sy: Math.abs(head.y - tail.y)
+          }
+
+          if (tail.x === head.x && tail.y === head.y) {
+            // don't move
+          } else {
+            if (tailVector.sx > 1 && tailVector.sy > 1) {
+              tail.x += 1 * tailVector.dx
+              tail.y += 1 * tailVector.dy
+            } else if (tailVector.sx > 1) {
+              tail.x += 1 * tailVector.dx
+              tail.y += tailVector.dy
+            } else if (tailVector.sy > 1) {
+              tail.x += tailVector.dx
+              tail.y += 1 * tailVector.dy
+            }
+
+            const tailKey = [tail.x, tail.y].join(',')
+            const tailVisits = visitGrid[tailKey] ?? []
+            tailVisits.push(tail.symbol)
+            visitGrid[tailKey] = tailVisits
+            tail.path.push({ x: tail.x, y: tail.y })
+          }
+        } while (tailVector.sx > 1 || tailVector.sy > 1)
+      })
+    }
+  })
+
+  await write(fromHere('visitGrid-long-tail.txt'), [
+    '## Visit Grid',
+    gridToString(sparseGridToGrid(visitGrid,
+      (value) => {
+        return value.find(n => n === 's') ??
+          value.find(n => n === '9') ??
+          value.find(n => n === '8') ??
+          value.find(n => n === '7') ??
+          value.find(n => n === '6') ??
+          value.find(n => n === '5') ??
+          value.find(n => n === '4') ??
+          value.find(n => n === '3') ??
+          value.find(n => n === '2') ??
+          value.find(n => n === '1') ??
+          value.find(n => n === 'H')
+      })),
+    '',
+    '## Tail Path 9',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '9') ?? '.')),
+    '',
+    '## Tail Path 8',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '8') ?? '.')),
+    '',
+    '## Tail Path 7',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '7') ?? '.')),
+    '',
+    '## Tail Path 6',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '6') ?? '.')),
+    '',
+    '## Tail Path 5',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '5') ?? '.')),
+    '',
+    '## Tail Path 4',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '4') ?? '.')),
+    '',
+    '## Tail Path 3',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '3') ?? '.')),
+    '',
+    '## Tail Path 2',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '2') ?? '.')),
+    '',
+    '## Tail Path 1',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === '1') ?? '.')),
+    '',
+    '## Head Path',
+    gridToString(sparseGridToGrid(visitGrid, value => value.find(n => n === 'H') ?? '.'))
+  ].join('\n'))
+
+  const solution = Object.values(visitGrid).reduce((acc, visit) => {
+    const tailVisit = visit.find(s => s === '9') ? 1 : 0
+    return acc + tailVisit
+  }, 0)
   report('Solution 2:', solution)
 }
 
