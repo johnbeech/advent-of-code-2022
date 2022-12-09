@@ -257,6 +257,7 @@ async function solveForSecondStar (input, outputSuffix) {
 
   await write(fromHere(`visitGrid-${outputSuffix}.md`), [
     '## Visit Grid',
+    '```',
     gridToString(sparseGridToGrid(visitGrid,
       (value) => {
         return value.find(n => n === 's') ??
@@ -271,6 +272,7 @@ async function solveForSecondStar (input, outputSuffix) {
           value.find(n => n === '1') ??
           value.find(n => n === 'H')
       })),
+    '```',
     '',
     '## Tail Path 9',
     '```',
