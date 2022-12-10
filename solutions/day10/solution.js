@@ -196,8 +196,9 @@ async function solveForSecondStar (input) {
   await write(fromHere('solution-part2.md'), [
     '# Solution to Part 2',
     'Cycle ' + context.cycles,
-    '',
+    '```',
     gridToString(context.screen),
+    '```',
     '',
     '```',
     JSON.stringify(context, null, 2),
