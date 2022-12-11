@@ -4,7 +4,7 @@ const fromHere = position(__dirname)
 const report = (...messages) => console.log(`[${require(fromHere('../../package.json')).logName} / ${__dirname.split(path.sep).pop()}]`, ...messages)
 
 async function run () {
-  const input = (await read(fromHere('input.txt'), 'utf8')).trim()
+  const input = (await read(fromHere('test.txt'), 'utf8')).trim()
 
   await solveForFirstStar(input)
   await solveForSecondStar(input)
@@ -39,10 +39,11 @@ function addMonkey (monkeys, line) {
 function setStartingItems (monkeys, line) {
   const monkey = monkeys[monkeys.length - 1]
   const [, items] = line.match(/\s+Starting items: ([\d,\s]+)/)
-  const startingItems = items.split(', ').map(n => Number.parseInt(n))
+  const startingItems = items.split(', ').map(n => BigInt(n))
   monkey.startingItems.push(...startingItems)
   monkey.caughtItems = monkey.startingItems.map((worryLevel) => {
     return {
+      startingWorryLevel: worryLevel,
       worryLevel,
       ops: []
     }
@@ -51,14 +52,14 @@ function setStartingItems (monkeys, line) {
 
 function opValueOf (old, v) {
   const registers = { old }
-  return registers[v] ?? Number.parseInt(v)
+  return registers[v] ?? BigInt(v)
 }
 
 const mathOps = {
   '+': (a, b) => a + b,
   '-': (a, b) => a - b,
   '*': (a, b) => a * b,
-  '/': (a, b) => Math.floor(a / b)
+  '/': (a, b) => a / b
 }
 function opMath (va, vb, op) {
   const mathOp = mathOps[op]
@@ -82,8 +83,10 @@ function setOperation (monkeys, line) {
 function setTest (monkeys, line) {
   const monkey = monkeys[monkeys.length - 1]
   const [, divBy] = line.match(/\s+Test: divisible by (\d+)/)
+  const divByNum = BigInt(divBy)
   monkey.test = (item) => {
-    return item % divBy === 0
+    const mod = item % divByNum
+    return mod === 0n || mod === 0
   }
 }
 
@@ -114,7 +117,7 @@ function monkeyReport (monkeys, round = 0) {
     `## Round ${round}`
   ]
   const monkeyLines = monkeys.map(monkey => {
-    return `- Monkey ${monkey.monkeyNumber}: inspections: ${monkey.inspectedItems}, items: ${monkey.caughtItems.join(', ')}`
+    return `- Monkey ${monkey.monkeyNumber}: inspections: ${monkey.inspectedItems}, items (${monkey.caughtItems.length}): ${monkey.caughtItems.map(n => n.worryLevel).join(', ')}`
   })
   lines.push(...monkeyLines)
   return lines.join('\n')
@@ -126,35 +129,39 @@ async function solveForFirstStar (input) {
   const reports = ['# Monkey Business']
 
   let round = 0
-  reports.push(monkeyReport(monkeys, round))
+  reports.push(monkeyReport(monkeys, 'Start'))
   while (round < 20) {
     monkeys.forEach(monkey => {
       while (monkey.caughtItems.length > 0) {
         const inspectedItem = monkey.caughtItems.shift()
         monkey.inspectedItems++
-        const newWorryLevel = monkey.inspectionOperation(inspectedItem.worryLevel)
-        const postBordemLevel = Math.floor(newWorryLevel / 3)
-        inspectedItem.worryLevel = postBordemLevel
-        const testPass = monkey.test(postBordemLevel)
+        const itemWorryLevel = inspectedItem.worryLevel
+        const inspectedWorryLevel = monkey.inspectionOperation(itemWorryLevel)
+        const postBordemLevel = Math.floor(Number(inspectedWorryLevel) / 3)
+        inspectedItem.worryLevel = BigInt(postBordemLevel)
+        const testPass = monkey.test(inspectedItem.worryLevel)
         const targetMonkeyId = testPass ? monkey.ifTrueMonkey : monkey.ifFalseMonkey
         const targetMonkey = monkeys[targetMonkeyId]
-        // console.log({ monkey: monkey.monkeyNumber, itemWorryLevel, newWorryLevel, postBordemLevel, targetMonkeyId })
+        // console.log({ monkey: monkey.monkeyNumber, itemWorryLevel, inspectedWorryLevel, postBordemLevel, targetMonkeyId })
         targetMonkey.caughtItems.push(inspectedItem)
       }
     })
-    reports.push(monkeyReport(monkeys, reports.length))
     round++
+    reports.push(monkeyReport(monkeys, round))
   }
-
-  await write(fromHere('monkeys.md'), reports.join('\n\n'))
 
   const monkeySort = monkeys.sort((a, b) => {
     return a.inspectedItems < b.inspectedItems ? 1 : -1
   })
   const [first, second] = monkeySort
   const monkeyBusiness = first.inspectedItems * second.inspectedItems
+
+  reports.push(`Total monkey business: ${monkeyBusiness}`)
+
   const solution = monkeyBusiness
   report('Solution 1:', solution)
+
+  await write(fromHere('monkeys.md'), reports.join('\n\n'))
 }
 
 async function solveForSecondStar (input) {
@@ -163,7 +170,7 @@ async function solveForSecondStar (input) {
   const reports = ['# Monkey Business']
 
   let round = 0
-  reports.push(monkeyReport(monkeys, round))
+  reports.push(monkeyReport(monkeys, 'Start'))
   while (round < 10000) {
     monkeys.forEach(monkey => {
       while (monkey.caughtItems.length > 0) {
@@ -179,19 +186,28 @@ async function solveForSecondStar (input) {
         targetMonkey.caughtItems.push(inspectedItem)
       }
     })
-    reports.push(monkeyReport(monkeys, reports.length))
     round++
+    if (round < 10) {
+      reports.push(monkeyReport(monkeys, round))
+    } else if (round === 10000) {
+      reports.push(monkeyReport(monkeys, round))
+    } else {
+      reports.push(`... Round ${round} ...`)
+    }
   }
-
-  await write(fromHere('monkeys-10000.md'), reports.join('\n\n'))
 
   const monkeySort = monkeys.sort((a, b) => {
     return a.inspectedItems < b.inspectedItems ? 1 : -1
   })
   const [first, second] = monkeySort
   const monkeyBusiness = first.inspectedItems * second.inspectedItems
+
+  reports.push(`Total monkey business: ${monkeyBusiness}`)
+
   const solution = monkeyBusiness
   report('Solution 2:', solution)
+
+  await write(fromHere('monkeys-10000.md'), reports.join('\n\n'))
 }
 
 run()
