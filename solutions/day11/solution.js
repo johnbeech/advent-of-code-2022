@@ -41,7 +41,12 @@ function setStartingItems (monkeys, line) {
   const [, items] = line.match(/\s+Starting items: ([\d,\s]+)/)
   const startingItems = items.split(', ').map(n => Number.parseInt(n))
   monkey.startingItems.push(...startingItems)
-  monkey.caughtItems.push(...startingItems)
+  monkey.caughtItems = monkey.startingItems.map((worryLevel) => {
+    return {
+      worryLevel,
+      ops: []
+    }
+  })
 }
 
 function opValueOf (old, v) {
@@ -125,15 +130,16 @@ async function solveForFirstStar (input) {
   while (round < 20) {
     monkeys.forEach(monkey => {
       while (monkey.caughtItems.length > 0) {
-        const itemWorryLevel = monkey.caughtItems.shift()
+        const inspectedItem = monkey.caughtItems.shift()
         monkey.inspectedItems++
-        const newWorryLevel = monkey.inspectionOperation(itemWorryLevel)
+        const newWorryLevel = monkey.inspectionOperation(inspectedItem.worryLevel)
         const postBordemLevel = Math.floor(newWorryLevel / 3)
+        inspectedItem.worryLevel = postBordemLevel
         const testPass = monkey.test(postBordemLevel)
         const targetMonkeyId = testPass ? monkey.ifTrueMonkey : monkey.ifFalseMonkey
         const targetMonkey = monkeys[targetMonkeyId]
         // console.log({ monkey: monkey.monkeyNumber, itemWorryLevel, newWorryLevel, postBordemLevel, targetMonkeyId })
-        targetMonkey.caughtItems.push(postBordemLevel)
+        targetMonkey.caughtItems.push(inspectedItem)
       }
     })
     reports.push(monkeyReport(monkeys, reports.length))
@@ -152,7 +158,39 @@ async function solveForFirstStar (input) {
 }
 
 async function solveForSecondStar (input) {
-  const solution = 'UNSOLVED'
+  const monkeys = parseMonkeys(input)
+
+  const reports = ['# Monkey Business']
+
+  let round = 0
+  reports.push(monkeyReport(monkeys, round))
+  while (round < 10000) {
+    monkeys.forEach(monkey => {
+      while (monkey.caughtItems.length > 0) {
+        const inspectedItem = monkey.caughtItems.shift()
+        monkey.inspectedItems++
+        const newWorryLevel = monkey.inspectionOperation(inspectedItem.worryLevel)
+        inspectedItem.ops.push(monkey.inspectionOperation)
+        inspectedItem.worryLevel = newWorryLevel
+        const testPass = monkey.test(newWorryLevel)
+        const targetMonkeyId = testPass ? monkey.ifTrueMonkey : monkey.ifFalseMonkey
+        const targetMonkey = monkeys[targetMonkeyId]
+        // console.log({ monkey: monkey.monkeyNumber, itemWorryLevel, newWorryLevel, postBordemLevel, targetMonkeyId })
+        targetMonkey.caughtItems.push(inspectedItem)
+      }
+    })
+    reports.push(monkeyReport(monkeys, reports.length))
+    round++
+  }
+
+  await write(fromHere('monkeys-10000.md'), reports.join('\n\n'))
+
+  const monkeySort = monkeys.sort((a, b) => {
+    return a.inspectedItems < b.inspectedItems ? 1 : -1
+  })
+  const [first, second] = monkeySort
+  const monkeyBusiness = first.inspectedItems * second.inspectedItems
+  const solution = monkeyBusiness
   report('Solution 2:', solution)
 }
 
