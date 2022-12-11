@@ -4,10 +4,14 @@ const fromHere = position(__dirname)
 const report = (...messages) => console.log(`[${require(fromHere('../../package.json')).logName} / ${__dirname.split(path.sep).pop()}]`, ...messages)
 
 async function run () {
-  const input = (await read(fromHere('test.txt'), 'utf8')).trim()
+  const testInput = (await read(fromHere('test.txt'), 'utf8')).trim()
+  const input = (await read(fromHere('input.txt'), 'utf8')).trim()
 
-  await solveForFirstStar(input)
-  await solveForSecondStar(input)
+  await solveForFirstStar(testInput, '-test')
+  await solveForFirstStar(input, '')
+
+  await solveForSecondStar(testInput, '-10000-test')
+  await solveForSecondStar(input, '-10000')
 }
 
 const observables = {
@@ -123,7 +127,7 @@ function monkeyReport (monkeys, round = 0) {
   return lines.join('\n')
 }
 
-async function solveForFirstStar (input) {
+async function solveForFirstStar (input, reportSuffix = '') {
   const monkeys = parseMonkeys(input)
 
   const reports = ['# Monkey Business']
@@ -132,6 +136,7 @@ async function solveForFirstStar (input) {
   reports.push(monkeyReport(monkeys, 'Start'))
   while (round < 20) {
     monkeys.forEach(monkey => {
+      console.log('Starting Round:', round, 'Turn:', monkey.monkeyNumber)
       while (monkey.caughtItems.length > 0) {
         const inspectedItem = monkey.caughtItems.shift()
         monkey.inspectedItems++
@@ -161,10 +166,10 @@ async function solveForFirstStar (input) {
   const solution = monkeyBusiness
   report('Solution 1:', solution)
 
-  await write(fromHere('monkeys.md'), reports.join('\n\n'))
+  await write(fromHere(`monkeys${reportSuffix}.md`), reports.join('\n\n'))
 }
 
-async function solveForSecondStar (input) {
+async function solveForSecondStar (input, reportSuffix = '') {
   const monkeys = parseMonkeys(input)
 
   const reports = ['# Monkey Business']
@@ -173,6 +178,7 @@ async function solveForSecondStar (input) {
   reports.push(monkeyReport(monkeys, 'Start'))
   while (round < 10000) {
     monkeys.forEach(monkey => {
+      console.log('Starting Round:', round, 'Turn:', monkey.monkeyNumber)
       while (monkey.caughtItems.length > 0) {
         const inspectedItem = monkey.caughtItems.shift()
         monkey.inspectedItems++
@@ -207,7 +213,7 @@ async function solveForSecondStar (input) {
   const solution = monkeyBusiness
   report('Solution 2:', solution)
 
-  await write(fromHere('monkeys-10000.md'), reports.join('\n\n'))
+  await write(fromHere(`monkeys${reportSuffix}.md`), reports.join('\n\n'))
 }
 
 run()
